@@ -1,68 +1,72 @@
+function getPathPrefix (url){
+    const matches = url.pathname.match(pathPrefix);
+    return matches.length > 0 ? matches[0] : "";
+}
+
+const pathPrefix = /^(r*node\/udc-....-....\/[0-9]+)/;
+const pageTitle = "CryoSPARC";
+
+//redirect if request made that doesn't properly include the path
 function redirect(requestDetails) {
-    if(requestDetails.originUrl.includes(".hpc.virginia.edu/rnode") && !requestDetails.url.includes(".hpc.virginia.edu/rnode")){
-        const urlSplit = requestDetails.originUrl.split("/");
-        const nodeHost = urlSplit[4]+"/"+urlSplit[5];
-        const newURL = requestDetails.url.replace(".hpc.virginia.edu", ".hpc.virginia.edu/rnode/" + nodeHost);
-        console.log(`redirect to: ${newURL}`);
+    if (requestDetails.originUrl === null) return; //happens for the first request to the page
+    const reqURL = new URL(requestDetails.url);
+    const pageURL = new URL(requestDetails.originUrl);
+    if (reqURL.hostname !== pageURL.hostname) return; //request is for some other server
+    if (!pathPrefix.test(pageURL.pathname)) return; //page url is not an rnode url
+    if(!pathPrefix.test(reqURL.pathname)){ //need to add prefix to path
+        const newURL = `${reqURL.origin}/${getPathPrefix(pageURL)}/${reqURL.pathname}`;
+        console.log(`redirecting to: ${newURL}`);
         return {redirectUrl: newURL};
     }
 }
 
-function replaceInResponse(details, callback) {
-    console.log("replacing");
-    let filter = browser.webRequest.filterResponseData(details.requestId);
+//transform request body using callback in order to replace text
+function replaceInResponse(responseDetails, callback) {
+    let filter = browser.webRequest.filterResponseData(responseDetails.requestId);
     let decoder = new TextDecoder("utf-8");
     let encoder = new TextEncoder();
-
     filter.ondata = (event) => {
         let str = decoder.decode(event.data, { stream: true });
         str = callback(str);
         filter.write(encoder.encode(str));
         filter.disconnect();
     };
-
     return {};
 }
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        const urlSplit = details.documentUrl.split("/");
-        const nodeHost = urlSplit[4]+"/"+urlSplit[5];
-        return str.replaceAll(":\"/", `:"/rnode/${nodeHost}/`);
+        return str.replaceAll(":\"/", `:"/${getPathPrefix(new URl(details.originUrl))}/`);
     }),
-    { urls: ["*://*.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js"] },
+    { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js"] },
     ["blocking"]
 );
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        const urlSplit = details.documentUrl.split("/");
-        const nodeHost = urlSplit[4]+"/"+urlSplit[5];
-        return str.replaceAll("/websocket", `/rnode/${nodeHost}/websocket`);
+        return str.replaceAll("/websocket", `/${getPathPrefix(new URl(details.originUrl))}/websocket`);
     }),
-    { urls: ["*://*.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js"] },
+    { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js"] },
     ["blocking"]
 );
 
+//fixing main html page
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        console.log("replacing assets");
-        console.log(details.url);
-        const urlSplit = details.url.split("/");
-        const nodeHost = urlSplit[4]+"/"+urlSplit[5];
-        str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="/rnode/${nodeHost}/assets/index.146c2037.js"`);
-        str = str.replaceAll(`<head>`, `<head><base href="https://${urlSplit[3]}/rnode/${nodeHost}/">`);
+        const pageURL = new URl(details.url);
+        const prefix = getPathPrefix(pageURL);
+        str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="/${prefix}/assets/index.146c2037.js"`);
+        str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}/${prefix}/">`);
         return str;
     }),
-    { urls: ["*://*.hpc.virginia.edu/rnode/*/*"]},
+    { urls: ["<all_urls>"], types: ["main_frame"]},
     ["blocking"]
 );
 
 browser.webRequest.onBeforeRequest.addListener(
     redirect,
-    { urls: ["*://*.hpc.virginia.edu/*"] },
+    { urls: ["*://ood.hpc.virginia.edu/*", "*://ood1.hpc.virginia.edu/*"] },
     ["blocking"],
 );
 
-//TODO: check page info before replacing
 //TODO: fix some links that are relative to the wrong path (sidebar links)
