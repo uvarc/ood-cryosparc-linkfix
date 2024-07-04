@@ -3,7 +3,7 @@ function getPathPrefix (url){
     return matches ? matches[0] : "";
 }
 
-const pathPrefix = /^\/(r*node\/udc-....-....\/[0-9]+)/;
+const pathPrefix = /^\/(r*node\/udc-....-...+\/[0-9]+)/;
 const pageTitle = "CryoSPARC";
 
 //redirect if request made that doesn't properly include the path
