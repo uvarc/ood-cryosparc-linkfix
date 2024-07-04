@@ -3,7 +3,7 @@ function getPathPrefix (url){
     return matches ? matches[0] : "";
 }
 
-const pathPrefix = /^(r*node\/udc-....-....\/[0-9]+)/;
+const pathPrefix = /^\/(r*node\/udc-....-....\/[0-9]+)/;
 const pageTitle = "CryoSPARC";
 
 //redirect if request made that doesn't properly include the path
@@ -14,7 +14,7 @@ function redirect(requestDetails) {
     if (reqURL.hostname !== pageURL.hostname) return; //request is for some other server
     if (!pathPrefix.test(pageURL.pathname)) return; //page url is not an rnode url
     if(!pathPrefix.test(reqURL.pathname)){ //need to add prefix to path
-        const newURL = `${reqURL.origin}/${getPathPrefix(pageURL)}/${reqURL.pathname}`;
+        const newURL = `${reqURL.origin}${getPathPrefix(pageURL)}${reqURL.pathname}`;
         console.log(`redirecting to: ${newURL}`);
         return {redirectUrl: newURL};
     }
@@ -36,7 +36,7 @@ function replaceInResponse(responseDetails, callback) {
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll(":\"/", `:"/${getPathPrefix(new URL(details.originUrl))}/`);
+        return str.replaceAll(":\"/", `:"${getPathPrefix(new URL(details.originUrl))}/`);
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js"] },
     ["blocking"]
@@ -44,7 +44,7 @@ browser.webRequest.onBeforeRequest.addListener(
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll("/websocket", `/${getPathPrefix(new URL(details.originUrl))}/websocket`);
+        return str.replaceAll("/websocket", `${getPathPrefix(new URL(details.originUrl))}/websocket`);
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js"] },
     ["blocking"]
@@ -54,9 +54,10 @@ browser.webRequest.onBeforeRequest.addListener(
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.url);
+        console.log(pageURL);
         const prefix = getPathPrefix(pageURL);
-        str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="/${prefix}/assets/index.146c2037.js"`);
-        str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}/${prefix}/">`);
+        str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="${prefix}/assets/index.146c2037.js"`);
+        str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}${prefix}/">`);
         return str;
     }),
     { urls: ["<all_urls>"], types: ["main_frame"]},
