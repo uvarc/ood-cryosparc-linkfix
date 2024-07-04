@@ -36,7 +36,7 @@ function replaceInResponse(responseDetails, callback) {
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll(":\"/", `:"/${getPathPrefix(new URl(details.originUrl))}/`);
+        return str.replaceAll(":\"/", `:"/${getPathPrefix(new URL(details.originUrl))}/`);
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js"] },
     ["blocking"]
@@ -44,7 +44,7 @@ browser.webRequest.onBeforeRequest.addListener(
 
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll("/websocket", `/${getPathPrefix(new URl(details.originUrl))}/websocket`);
+        return str.replaceAll("/websocket", `/${getPathPrefix(new URL(details.originUrl))}/websocket`);
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js"] },
     ["blocking"]
@@ -53,7 +53,7 @@ browser.webRequest.onBeforeRequest.addListener(
 //fixing main html page
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
-        const pageURL = new URl(details.url);
+        const pageURL = new URL(details.url);
         const prefix = getPathPrefix(pageURL);
         str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="/${prefix}/assets/index.146c2037.js"`);
         str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}/${prefix}/">`);
