@@ -8,7 +8,7 @@ const pageTitle = "CryoSPARC";
 
 //redirect if request made that doesn't properly include the path
 function redirect(requestDetails) {
-    if (requestDetails.originUrl === null) return; //happens for the first request to the page
+    if (requestDetails.originUrl === undefined) return; //happens for the first request to the page
     const reqURL = new URL(requestDetails.url);
     const pageURL = new URL(requestDetails.originUrl);
     if (reqURL.hostname !== pageURL.hostname) return; //request is for some other server
