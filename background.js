@@ -1,6 +1,6 @@
 function getPathPrefix (url){
     const matches = url.pathname.match(pathPrefix);
-    return matches.length > 0 ? matches[0] : "";
+    return matches ? matches[0] : "";
 }
 
 const pathPrefix = /^(r*node\/udc-....-....\/[0-9]+)/;
