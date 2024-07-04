@@ -56,7 +56,8 @@ browser.webRequest.onBeforeRequest.addListener(
         const pageURL = new URL(details.url);
         console.log(pageURL);
         const prefix = getPathPrefix(pageURL);
-        str = str.replaceAll(`src="/assets/index.146c2037.js"`, `src="${prefix}/assets/index.146c2037.js"`);
+        str = str.replaceAll(`src="/`, `src="./`);
+        str = str.replaceAll(`href="/`, `href="./`);
         str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}${prefix}/">`);
         return str;
     }),
