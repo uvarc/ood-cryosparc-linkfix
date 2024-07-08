@@ -6,7 +6,7 @@
   "description": "fixes links",
 
   "icons": {
-    "48": "icons/border-48.png"
+    "48": "icons/icon_48.png"
   },
 
   "permissions": ["webRequest", "webRequestBlocking", "*://ood1.hpc.virginia.edu/rnode*", "*://ood.hpc.virginia.edu/rnode*"],
