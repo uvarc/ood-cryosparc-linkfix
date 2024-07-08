@@ -15,7 +15,6 @@ function redirect(requestDetails) {
     if (!pathPrefix.test(pageURL.pathname)) return; //page url is not an rnode url
     if(!pathPrefix.test(reqURL.pathname)){ //need to add prefix to path
         const newURL = `${reqURL.origin}${getPathPrefix(pageURL)}${reqURL.pathname}`;
-        console.log(`redirecting to: ${newURL}`);
         return {redirectUrl: newURL};
     }
 }
@@ -29,39 +28,39 @@ function replaceInResponse(responseDetails, callback) {
         let str = decoder.decode(event.data, { stream: true });
         str = callback(str);
         filter.write(encoder.encode(str));
-        filter.disconnect();
+    };
+    filter.onstop = (event) => {
+        filter.close();
     };
     return {};
 }
-
-browser.webRequest.onBeforeRequest.addListener(
-    (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll(":\"/", `:"${getPathPrefix(new URL(details.originUrl))}/`);
-    }),
-    { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/index.146c2037.js"] },
-    ["blocking"]
-);
-
-browser.webRequest.onBeforeRequest.addListener(
-    (details)=>replaceInResponse(details, (str)=>{
-        return str.replaceAll("/websocket", `${getPathPrefix(new URL(details.originUrl))}/websocket`);
-    }),
-    { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/router.1b465492.js"] },
-    ["blocking"]
-);
 
 //fixing main html page
 browser.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.url);
-        console.log(pageURL);
         const prefix = getPathPrefix(pageURL);
-        str = str.replaceAll(`src="/`, `src="./`);
-        str = str.replaceAll(`href="/`, `href="./`);
+        str = str.replaceAll(`src="/assets/index.146c2037.js`, `src="./assets/index.146c2037.js`);
         str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}${prefix}/">`);
         return str;
     }),
     { urls: ["<all_urls>"], types: ["main_frame"]},
+    ["blocking"]
+);
+
+browser.webRequest.onBeforeRequest.addListener(
+    (details)=>replaceInResponse(details, (str)=>{
+        const pageURL = new URL(details.originUrl);
+        if (details.url.includes("index.146c2037.js")){
+            return str.replaceAll(`:"/`, `:"${getPathPrefix(pageURL)}/`);
+        }
+        if (details.url.includes("router.1b465492.js")){
+            str = str.replaceAll("/websocket", `${getPathPrefix(pageURL)}/websocket`);
+        }
+        str = str.replaceAll(`"/browse`, `"${getPathPrefix(pageURL)}/browse`);
+        return str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+    }),
+    { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/*", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/*"] },
     ["blocking"]
 );
 
