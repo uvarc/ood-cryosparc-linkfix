@@ -21,7 +21,7 @@ function redirect(requestDetails) {
 
 //transform request body using callback in order to replace text
 function replaceInResponse(responseDetails, callback) {
-    let filter = browser.webRequest.filterResponseData(responseDetails.requestId);
+    let filter = chrome.webRequest.filterResponseData(responseDetails.requestId);
     let decoder = new TextDecoder("utf-8");
     let encoder = new TextEncoder();
     filter.ondata = (event) => {
@@ -36,7 +36,7 @@ function replaceInResponse(responseDetails, callback) {
 }
 
 //fixing main html page
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.url);
         const prefix = getPathPrefix(pageURL);
@@ -48,7 +48,7 @@ browser.webRequest.onBeforeRequest.addListener(
     ["blocking"]
 );
 
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.originUrl);
         if (details.url.includes("index.146c2037.js")){
@@ -56,15 +56,29 @@ browser.webRequest.onBeforeRequest.addListener(
         }
         if (details.url.includes("router.1b465492.js")){
             str = str.replaceAll("/websocket", `${getPathPrefix(pageURL)}/websocket`);
+            str = str.replaceAll(`t.startsWith(G.browse.substring(0,7))`, `t.startsWith(G.browse.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(7).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+            str = str.replaceAll(`t.startsWith(G.liveDev.substring(0,9))`, `t.startsWith(G.liveDev.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(9).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+            str = str.replaceAll(`t.startsWith(G.live.substring(0,5))`, `t.startsWith(G.live.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(5).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+        }
+        if (details.url.includes("Login.c4b576ba.js")){
+            str = str.replaceAll("/reset-password", `${getPathPrefix(pageURL)}/reset-password`);
+            str = str.replaceAll("/create-account", `${getPathPrefix(pageURL)}/create-account`);
+        }
+        if (details.url.includes("CreateAccount.a5765411.js") || details.url.includes("ResetPassword.96c9ba35.js")){
+            str = str.replaceAll("/login", `${getPathPrefix(pageURL)}/login`);
         }
         str = str.replaceAll(`"/browse`, `"${getPathPrefix(pageURL)}/browse`);
-        return str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+        str = str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+        return str;
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/*", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/*"] },
     ["blocking"]
 );
 
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     redirect,
     { urls: ["*://ood.hpc.virginia.edu/*", "*://ood1.hpc.virginia.edu/*"] },
     ["blocking"],

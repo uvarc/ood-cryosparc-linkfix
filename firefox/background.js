@@ -56,9 +56,23 @@ chrome.webRequest.onBeforeRequest.addListener(
         }
         if (details.url.includes("router.1b465492.js")){
             str = str.replaceAll("/websocket", `${getPathPrefix(pageURL)}/websocket`);
+            str = str.replaceAll(`t.startsWith(G.browse.substring(0,7))`, `t.startsWith(G.browse.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(7).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+            str = str.replaceAll(`t.startsWith(G.liveDev.substring(0,9))`, `t.startsWith(G.liveDev.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(9).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+            str = str.replaceAll(`t.startsWith(G.live.substring(0,5))`, `t.startsWith(G.live.slice(0,-9))`);
+            str = str.replaceAll(`t.substring(5).split("/").filter(Boolean)`, `t.split("/").filter(Boolean).slice(4)`);
+        }
+        if (details.url.includes("Login.c4b576ba.js")){
+            str = str.replaceAll("/reset-password", `${getPathPrefix(pageURL)}/reset-password`);
+            str = str.replaceAll("/create-account", `${getPathPrefix(pageURL)}/create-account`);
+        }
+        if (details.url.includes("CreateAccount.a5765411.js") || details.url.includes("ResetPassword.96c9ba35.js")){
+            str = str.replaceAll("/login", `${getPathPrefix(pageURL)}/login`);
         }
         str = str.replaceAll(`"/browse`, `"${getPathPrefix(pageURL)}/browse`);
-        return str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+        str = str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+        return str;
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/*", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/*"] },
     ["blocking"]
