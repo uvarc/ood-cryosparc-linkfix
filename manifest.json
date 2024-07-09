@@ -13,5 +13,12 @@
 
   "background": {
     "scripts": ["background.js"]
-  }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://ood1.hpc.virginia.edu/pun/sys/dashboard/batch_connect/sessions", "https://ood.hpc.virginia.edu/pun/sys/dashboard/batch_connect/sessions"],
+      "js": ["content.js"]
+    }
+  ]
 }
