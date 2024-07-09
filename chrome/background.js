@@ -84,4 +84,4 @@ chrome.webRequest.onBeforeRequest.addListener(
     ["blocking"],
 );
 
-//TODO: fix some links that are relative to the wrong path (sidebar links)
+//TODO: links to "/live, /live-dev and /extend may not have been fixed
