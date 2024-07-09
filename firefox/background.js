@@ -72,6 +72,8 @@ chrome.webRequest.onBeforeRequest.addListener(
         }
         str = str.replaceAll(`"/browse`, `"${getPathPrefix(pageURL)}/browse`);
         str = str.replaceAll(`\`/browse`, `\`${getPathPrefix(pageURL)}/browse`);
+        str = str.replaceAll(`"/live`, `"${getPathPrefix(pageURL)}/live`);
+        str = str.replaceAll(`\`/live`, `\`${getPathPrefix(pageURL)}/live`);
         return str;
     }),
     { urls: ["*://ood.hpc.virginia.edu/rnode/*/*/assets/*", "*://ood1.hpc.virginia.edu/rnode/*/*/assets/*"] },
@@ -83,5 +85,3 @@ chrome.webRequest.onBeforeRequest.addListener(
     { urls: ["*://ood.hpc.virginia.edu/*", "*://ood1.hpc.virginia.edu/*"] },
     ["blocking"],
 );
-
-//TODO: links to "/live, /live-dev and /extend may not have been fixed
