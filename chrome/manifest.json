@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "OOD linkfix",
+  "version": "1.0",
+
+  "description": "fixes links",
+
+  "icons": {
+    "48": "icons/icon_48.png"
+  },
+
+  "permissions": ["webRequest", "webRequestBlocking"],
+  "host_permissions": ["*://ood1.hpc.virginia.edu/rnode*", "*://ood.hpc.virginia.edu/rnode*"],
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://ood1.hpc.virginia.edu/pun/sys/dashboard/batch_connect/sessions", "https://ood.hpc.virginia.edu/pun/sys/dashboard/batch_connect/sessions"],
+      "js": ["content.js"]
+    }
+  ]
+}
