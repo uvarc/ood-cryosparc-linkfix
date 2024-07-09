@@ -21,7 +21,7 @@ function redirect(requestDetails) {
 
 //transform request body using callback in order to replace text
 function replaceInResponse(responseDetails, callback) {
-    let filter = browser.webRequest.filterResponseData(responseDetails.requestId);
+    let filter = chrome.webRequest.filterResponseData(responseDetails.requestId);
     let decoder = new TextDecoder("utf-8");
     let encoder = new TextEncoder();
     filter.ondata = (event) => {
@@ -36,7 +36,7 @@ function replaceInResponse(responseDetails, callback) {
 }
 
 //fixing main html page
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.url);
         const prefix = getPathPrefix(pageURL);
@@ -48,7 +48,7 @@ browser.webRequest.onBeforeRequest.addListener(
     ["blocking"]
 );
 
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     (details)=>replaceInResponse(details, (str)=>{
         const pageURL = new URL(details.originUrl);
         if (details.url.includes("index.146c2037.js")){
@@ -64,7 +64,7 @@ browser.webRequest.onBeforeRequest.addListener(
     ["blocking"]
 );
 
-browser.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
     redirect,
     { urls: ["*://ood.hpc.virginia.edu/*", "*://ood1.hpc.virginia.edu/*"] },
     ["blocking"],
