@@ -9,7 +9,7 @@
     "48": "icons/icon_48.png"
   },
 
-  "permissions": ["webRequest", "webRequestBlocking", "*://ood1.hpc.virginia.edu/rnode*", "*://ood.hpc.virginia.edu/rnode*"],
+  "permissions": ["webRequest", "webRequestBlocking", "tabs", "*://ood1.hpc.virginia.edu/rnode*", "*://ood.hpc.virginia.edu/rnode*"],
 
   "background": {
     "scripts": ["background.js"]

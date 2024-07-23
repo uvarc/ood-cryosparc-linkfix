@@ -4,9 +4,11 @@ function getPathPrefix (url){
 }
 
 const pathPrefix = /^\/(r*node\/udc-....-.+\/[0-9]+)/;
+const tabUrls = {};
 
 //redirect if request made that doesn't properly include the path
 function redirect(requestDetails) {
+    requestDetails.originUrl = tabUrls[`${requestDetails.tabId}`];
     if (requestDetails.originUrl === undefined) return; //happens for the first request to the page
     const reqURL = new URL(requestDetails.url);
     const pageURL = new URL(requestDetails.originUrl);
@@ -18,32 +20,14 @@ function redirect(requestDetails) {
     }
 }
 
-//transform request body using callback in order to replace text
-function replaceInResponse(responseDetails, callback) {
-    let filter = chrome.webRequest.filterResponseData(responseDetails.requestId);
-    let decoder = new TextDecoder("utf-8");
-    let encoder = new TextEncoder();
-    filter.ondata = (event) => {
-        let str = decoder.decode(event.data, { stream: true });
-        str = callback(str);
-        filter.write(encoder.encode(str));
-    };
-    filter.onstop = (event) => {
-        filter.close();
-    };
-    return {};
-}
-
-//fixing main html page
 chrome.webRequest.onBeforeRequest.addListener(
-    (details)=>replaceInResponse(details, (str)=>{
-        const pageURL = new URL(details.url);
-        const prefix = getPathPrefix(pageURL);
-        str = str.replaceAll(`src="/assets/index.146c2037.js`, `src="./assets/index.146c2037.js`);
-        str = str.replaceAll(`<head>`, `<head><base href="${pageURL.origin}${prefix}/">`);
-        return str;
-    }),
-    { urls: ["<all_urls>"], types: ["main_frame"]},
+    function(details) {
+        if (details.tabId >= 0) {
+            tabUrls[`${details.tabId}`] = details.url;
+            console.log(tabUrls[`${details.tabId}`]);
+        }
+    },
+    {urls: ['<all_urls>'], types: ['main_frame'],},
     ["blocking"]
 );
 
